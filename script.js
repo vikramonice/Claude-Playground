@@ -1,62 +1,54 @@
 // ====================================
-// Navigation Toggle for Mobile
+// Navigation Toggle for Mobile Menu
 // ====================================
 
 const navToggle = document.getElementById('navToggle');
-const navMenu = document.getElementById('navMenu');
-const navLinks = document.querySelectorAll('.nav-link');
+const menuOverlay = document.getElementById('menuOverlay');
+const menuClose = document.getElementById('menuClose');
+const menuLinks = document.querySelectorAll('.menu-link');
 
-// Toggle mobile menu
+// Open menu
 if (navToggle) {
     navToggle.addEventListener('click', () => {
-        navMenu.classList.toggle('active');
-        navToggle.classList.toggle('active');
+        menuOverlay.classList.add('active');
+        navToggle.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
     });
 }
 
-// Close mobile menu when clicking on a link
-navLinks.forEach(link => {
-    link.addEventListener('click', () => {
-        navMenu.classList.remove('active');
+// Close menu with close button
+if (menuClose) {
+    menuClose.addEventListener('click', () => {
+        menuOverlay.classList.remove('active');
         navToggle.classList.remove('active');
+        document.body.style.overflow = ''; // Re-enable scrolling
+    });
+}
+
+// Close menu when clicking on a link
+menuLinks.forEach(link => {
+    link.addEventListener('click', () => {
+        menuOverlay.classList.remove('active');
+        navToggle.classList.remove('active');
+        document.body.style.overflow = ''; // Re-enable scrolling
     });
 });
 
-// ====================================
-// Active Navigation Link on Scroll
-// ====================================
-
-window.addEventListener('scroll', () => {
-    let current = '';
-    const sections = document.querySelectorAll('section');
-
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        if (window.pageYOffset >= sectionTop - 100) {
-            current = section.getAttribute('id');
-        }
-    });
-
-    navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href') === `#${current}`) {
-            link.classList.add('active');
-        }
-    });
+// Close menu when clicking outside
+menuOverlay.addEventListener('click', (e) => {
+    if (e.target === menuOverlay) {
+        menuOverlay.classList.remove('active');
+        navToggle.classList.remove('active');
+        document.body.style.overflow = ''; // Re-enable scrolling
+    }
 });
 
-// ====================================
-// Navbar Background on Scroll
-// ====================================
-
-const navbar = document.getElementById('navbar');
-
-window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) {
-        navbar.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.1)';
-    } else {
-        navbar.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+// Close menu with Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && menuOverlay.classList.contains('active')) {
+        menuOverlay.classList.remove('active');
+        navToggle.classList.remove('active');
+        document.body.style.overflow = ''; // Re-enable scrolling
     }
 });
 
@@ -69,7 +61,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         e.preventDefault();
         const target = document.querySelector(this.getAttribute('href'));
         if (target) {
-            const offsetTop = target.offsetTop - 80; // Account for fixed navbar
+            const offsetTop = target.offsetTop - 70; // Account for fixed navbar
             window.scrollTo({
                 top: offsetTop,
                 behavior: 'smooth'
@@ -79,37 +71,37 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 // ====================================
-// Intersection Observer for Fade-in Animations
+// Scroll to Top Button
 // ====================================
 
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -100px 0px'
-};
+const createScrollToTop = () => {
+    const scrollBtn = document.createElement('button');
+    scrollBtn.innerHTML = '↑';
+    scrollBtn.className = 'scroll-to-top';
+    scrollBtn.setAttribute('aria-label', 'Scroll to top');
 
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
+    document.body.appendChild(scrollBtn);
+
+    window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 300) {
+            scrollBtn.classList.add('visible');
+        } else {
+            scrollBtn.classList.remove('visible');
         }
     });
-}, observerOptions);
 
-// Observe elements for animation
-const animateElements = document.querySelectorAll(
-    '.research-item, .timeline-item, .experience-card, .publication-item, .award-card, .leadership-item, .contact-item'
-);
+    scrollBtn.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+};
 
-animateElements.forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-    observer.observe(el);
-});
+createScrollToTop();
 
 // ====================================
-// Add Loading Animation
+// Page Load Animation
 // ====================================
 
 window.addEventListener('load', () => {
@@ -121,7 +113,166 @@ window.addEventListener('load', () => {
 });
 
 // ====================================
-// Dynamic Copyright Year
+// Accessibility Enhancements
+// ====================================
+
+// Add skip to main content link
+const addSkipLink = () => {
+    const skipLink = document.createElement('a');
+    skipLink.href = '#about';
+    skipLink.textContent = 'Skip to main content';
+    skipLink.className = 'skip-link';
+
+    document.body.insertBefore(skipLink, document.body.firstChild);
+};
+
+addSkipLink();
+
+// ====================================
+// Console Message
+// ====================================
+
+console.log('%c👋 Welcome to Vikram Goel\'s Portfolio!', 'color: #4A9B9B; font-size: 20px; font-weight: bold;');
+console.log('%c🧊 Antarctic Glaciologist | Scientist at NCPOR', 'color: #357373; font-size: 14px;');
+console.log('%cInterested in collaboration? Reach out via the contact section!', 'color: #4a4a4a; font-size: 12px;');
+
+// ====================================
+// Performance Monitoring (Development)
+// ====================================
+
+if ('performance' in window) {
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            const perfData = performance.getEntriesByType('navigation')[0];
+            if (perfData) {
+                console.log('Page Load Time:', Math.round(perfData.loadEventEnd - perfData.fetchStart), 'ms');
+            }
+        }, 0);
+    });
+}
+
+// ====================================
+// Lazy Loading Images (if any are added)
+// ====================================
+
+if ('loading' in HTMLImageElement.prototype) {
+    const images = document.querySelectorAll('img[loading="lazy"]');
+    images.forEach(img => {
+        if (img.dataset.src) {
+            img.src = img.dataset.src;
+        }
+    });
+} else {
+    // Fallback for browsers that don't support lazy loading
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js';
+    document.body.appendChild(script);
+}
+
+// ====================================
+// Handle External Links
+// ====================================
+
+document.querySelectorAll('a[target="_blank"]').forEach(link => {
+    // Add rel attributes for security
+    if (!link.rel) {
+        link.rel = 'noopener noreferrer';
+    }
+});
+
+// ====================================
+// Email Protection
+// ====================================
+
+const protectEmails = () => {
+    const emailLinks = document.querySelectorAll('a[href^="mailto:"]');
+    emailLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            // Could add analytics tracking here if needed
+            console.log('Email link clicked:', link.href);
+        });
+    });
+};
+
+protectEmails();
+
+// ====================================
+// Detect Dark Mode Preference
+// ====================================
+
+const respectColorScheme = () => {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        console.log('User prefers dark mode - Light theme active');
+        // Could implement dark theme toggle here if desired
+    }
+};
+
+respectColorScheme();
+
+// Listen for changes in color scheme preference
+if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        respectColorScheme();
+    });
+}
+
+// ====================================
+// Handle Print Events
+// ====================================
+
+window.addEventListener('beforeprint', () => {
+    console.log('Preparing page for printing...');
+});
+
+window.addEventListener('afterprint', () => {
+    console.log('Print dialog closed');
+});
+
+// ====================================
+// Intersection Observer for Fade-in Animations
+// ====================================
+
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, observerOptions);
+
+// Observe sections for subtle fade-in
+const animateElements = document.querySelectorAll('.publication, .presentation, .project, .award');
+
+animateElements.forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(10px)';
+    el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    observer.observe(el);
+});
+
+// ====================================
+// Handle Focus for Accessibility
+// ====================================
+
+// Ensure focus is visible when navigating with keyboard
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+        document.body.classList.add('user-is-tabbing');
+    }
+});
+
+document.addEventListener('mousedown', () => {
+    document.body.classList.remove('user-is-tabbing');
+});
+
+// ====================================
+// Update Dynamic Copyright Year
 // ====================================
 
 const updateYear = () => {
@@ -135,191 +286,20 @@ const updateYear = () => {
 updateYear();
 
 // ====================================
-// Scroll to Top Button (Optional Enhancement)
+// Service Worker Registration (Optional)
 // ====================================
 
-const createScrollToTop = () => {
-    const scrollBtn = document.createElement('button');
-    scrollBtn.innerHTML = '↑';
-    scrollBtn.className = 'scroll-to-top';
-    scrollBtn.style.cssText = `
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 50%, #6366f1 100%);
-        color: white;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-        z-index: 999;
-        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
-    `;
-
-    document.body.appendChild(scrollBtn);
-
-    window.addEventListener('scroll', () => {
-        if (window.pageYOffset > 300) {
-            scrollBtn.style.opacity = '1';
-            scrollBtn.style.visibility = 'visible';
-        } else {
-            scrollBtn.style.opacity = '0';
-            scrollBtn.style.visibility = 'hidden';
-        }
-    });
-
-    scrollBtn.addEventListener('click', () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    });
-
-    scrollBtn.addEventListener('mouseenter', () => {
-        scrollBtn.style.transform = 'translateY(-5px) scale(1.1)';
-    });
-
-    scrollBtn.addEventListener('mouseleave', () => {
-        scrollBtn.style.transform = 'translateY(0) scale(1)';
-    });
-};
-
-createScrollToTop();
-
-// ====================================
-// Add Hover Effect to Publication Links
-// ====================================
-
-const pubLinks = document.querySelectorAll('.pub-link');
-pubLinks.forEach(link => {
-    link.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateX(5px)';
-    });
-    link.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateX(0)';
-    });
-});
-
-// ====================================
-// Email Protection (Simple obfuscation)
-// ====================================
-
-const protectEmails = () => {
-    const emailLinks = document.querySelectorAll('a[href^="mailto:"]');
-    emailLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            // Track email clicks if analytics is needed
-            console.log('Email link clicked');
-        });
-    });
-};
-
-protectEmails();
-
-// ====================================
-// Lazy Loading for Performance
-// ====================================
-
-if ('loading' in HTMLImageElement.prototype) {
-    const images = document.querySelectorAll('img[loading="lazy"]');
-    images.forEach(img => {
-        img.src = img.dataset.src;
-    });
-} else {
-    // Fallback for browsers that don't support lazy loading
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js';
-    document.body.appendChild(script);
-}
-
-// ====================================
-// Console Easter Egg
-// ====================================
-
-console.log('%c👋 Welcome to Dr. Vikram Goel\'s Portfolio!', 'color: #2563eb; font-size: 20px; font-weight: bold;');
-console.log('%c🧊 Antarctic Glaciologist | Scientist at NCPOR', 'color: #3b82f6; font-size: 14px;');
-console.log('%cInterested in collaboration? Reach out via the contact section!', 'color: #64748b; font-size: 12px;');
-
-// ====================================
-// Performance Monitoring
-// ====================================
-
-if ('performance' in window) {
+// Uncomment if you want to add PWA functionality
+/*
+if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        setTimeout(() => {
-            const perfData = performance.getEntriesByType('navigation')[0];
-            console.log('Page Load Time:', Math.round(perfData.loadEventEnd - perfData.fetchStart), 'ms');
-        }, 0);
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+                console.log('ServiceWorker registered:', registration);
+            })
+            .catch(err => {
+                console.log('ServiceWorker registration failed:', err);
+            });
     });
 }
-
-// ====================================
-// Accessibility Enhancements
-// ====================================
-
-// Add skip to main content link
-const addSkipLink = () => {
-    const skipLink = document.createElement('a');
-    skipLink.href = '#about';
-    skipLink.textContent = 'Skip to main content';
-    skipLink.className = 'skip-link';
-    skipLink.style.cssText = `
-        position: absolute;
-        top: -40px;
-        left: 0;
-        background: #2563eb;
-        color: white;
-        padding: 8px;
-        text-decoration: none;
-        z-index: 10000;
-    `;
-
-    skipLink.addEventListener('focus', () => {
-        skipLink.style.top = '0';
-    });
-
-    skipLink.addEventListener('blur', () => {
-        skipLink.style.top = '-40px';
-    });
-
-    document.body.insertBefore(skipLink, document.body.firstChild);
-};
-
-addSkipLink();
-
-// ====================================
-// Keyboard Navigation Enhancement
-// ====================================
-
-document.addEventListener('keydown', (e) => {
-    // Press 'Escape' to close mobile menu
-    if (e.key === 'Escape' && navMenu.classList.contains('active')) {
-        navMenu.classList.remove('active');
-        navToggle.classList.remove('active');
-    }
-});
-
-// ====================================
-// Theme Detection (Respects user preference)
-// ====================================
-
-const respectColorScheme = () => {
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        console.log('User prefers dark mode - You can implement dark theme here');
-        // Implement dark theme if needed
-    }
-};
-
-respectColorScheme();
-
-// Listen for changes in color scheme preference
-if (window.matchMedia) {
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-        respectColorScheme();
-    });
-}
+*/
