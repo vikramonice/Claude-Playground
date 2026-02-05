@@ -35,6 +35,7 @@
                 <li><a href="#projects" class="menu-link">PROJECTS</a></li>
                 <li><a href="#publications" class="menu-link">PUBLICATIONS</a></li>
                 <li><a href="#presentations" class="menu-link">PRESENTATIONS</a></li>
+                <li><a href="#photos" class="menu-link">PHOTOS</a></li>
                 <li><a href="#awards" class="menu-link">AWARDS</a></li>
                 <li><a href="#contact" class="menu-link">CONTACT</a></li>
             </ul>
@@ -44,8 +45,9 @@
     <!-- Hero Section -->
     <section id="home" class="hero">
         <div class="hero-image">
-            <!-- Placeholder for glacier image - replace with actual image -->
-            <div class="hero-placeholder"></div>
+            <!-- Replace src with your actual image path: images/hero/glacier1.jpg -->
+            <img src="images/hero/main-hero.jpg" alt="Antarctic glacier landscape" class="hero-img">
+            <!-- Fallback: If image not found, shows gradient background -->
         </div>
     </section>
 
@@ -53,8 +55,8 @@
     <section id="about" class="content-section">
         <div class="container-narrow">
             <div class="profile-photo">
-                <!-- Circular profile photo placeholder -->
-                <div class="profile-placeholder"></div>
+                <!-- Replace src with your profile photo: images/profile/vikram-goel.jpg -->
+                <img src="images/profile/profile.jpg" alt="Dr. Vikram Goel" class="profile-img">
             </div>
 
             <div class="bio">
@@ -234,6 +236,89 @@
             </div>
         </div>
     </section>
+
+    <!-- Photos Section -->
+    <section id="photos" class="content-section">
+        <div class="hero-image-small">
+            <img src="images/hero/photos-hero.jpg" alt="Antarctic field work" class="hero-img">
+        </div>
+        <div class="container-narrow">
+            <h2>PHOTOS</h2>
+            <p>Field work and research expeditions in Antarctica, documenting glaciological surveys, ice rises, and polar research activities.</p>
+
+            <!-- Photo Gallery Grid -->
+            <div class="photo-gallery">
+                <!-- Gallery Item 1 -->
+                <div class="gallery-item">
+                    <img src="images/gallery/expedition-1.jpg" alt="Antarctic field expedition" class="gallery-img" loading="lazy">
+                    <div class="gallery-caption">SENS Expedition - Nivl Ice Shelf, 2024</div>
+                </div>
+
+                <!-- Gallery Item 2 -->
+                <div class="gallery-item">
+                    <img src="images/gallery/expedition-2.jpg" alt="Ice core drilling" class="gallery-img" loading="lazy">
+                    <div class="gallery-caption">RAICA-CP Ice Core Drilling, West Antarctica</div>
+                </div>
+
+                <!-- Gallery Item 3 -->
+                <div class="gallery-item">
+                    <img src="images/gallery/expedition-3.jpg" alt="Radar survey equipment" class="gallery-img" loading="lazy">
+                    <div class="gallery-caption">Ground-penetrating radar survey</div>
+                </div>
+
+                <!-- Gallery Item 4 -->
+                <div class="gallery-item">
+                    <img src="images/gallery/expedition-4.jpg" alt="Ice rise research" class="gallery-img" loading="lazy">
+                    <div class="gallery-caption">Kamelryggen Ice Rise survey</div>
+                </div>
+
+                <!-- Gallery Item 5 -->
+                <div class="gallery-item">
+                    <img src="images/gallery/expedition-5.jpg" alt="Field camp Antarctica" class="gallery-img" loading="lazy">
+                    <div class="gallery-caption">Field camp setup on Canisteo Peninsula</div>
+                </div>
+
+                <!-- Gallery Item 6 -->
+                <div class="gallery-item">
+                    <img src="images/gallery/expedition-6.jpg" alt="Antarctic landscape" class="gallery-img" loading="lazy">
+                    <div class="gallery-caption">Antarctic ice shelf landscape</div>
+                </div>
+
+                <!-- Gallery Item 7 -->
+                <div class="gallery-item">
+                    <img src="images/gallery/expedition-7.jpg" alt="Research vessel" class="gallery-img" loading="lazy">
+                    <div class="gallery-caption">Research vessel in Antarctic waters</div>
+                </div>
+
+                <!-- Gallery Item 8 -->
+                <div class="gallery-item">
+                    <img src="images/gallery/expedition-8.jpg" alt="Geophysical survey" class="gallery-img" loading="lazy">
+                    <div class="gallery-caption">Geophysical survey operations</div>
+                </div>
+
+                <!-- Gallery Item 9 -->
+                <div class="gallery-item">
+                    <img src="images/gallery/expedition-9.jpg" alt="Team photo Antarctica" class="gallery-img" loading="lazy">
+                    <div class="gallery-caption">Research team at Indian Antarctic Station</div>
+                </div>
+
+                <!-- Add more gallery items as needed -->
+            </div>
+
+            <p style="margin-top: 2rem; font-size: 0.95rem; color: #666;">
+                <em>To add more photos: Place your images in the <code>images/gallery/</code> folder and follow the HTML structure above.</em>
+            </p>
+        </div>
+    </section>
+
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="lightbox">
+        <span class="lightbox-close">&times;</span>
+        <img class="lightbox-content" id="lightbox-img">
+        <div class="lightbox-caption" id="lightbox-caption"></div>
+        <button class="lightbox-prev" aria-label="Previous image">&#10094;</button>
+        <button class="lightbox-next" aria-label="Next image">&#10095;</button>
+    </div>
 
     <!-- Awards Section -->
     <section id="awards" class="content-section">

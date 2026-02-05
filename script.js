@@ -286,6 +286,122 @@ const updateYear = () => {
 updateYear();
 
 // ====================================
+// Lightbox Gallery Functionality
+// ====================================
+
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+const lightboxCaption = document.getElementById('lightbox-caption');
+const lightboxClose = document.querySelector('.lightbox-close');
+const lightboxPrev = document.querySelector('.lightbox-prev');
+const lightboxNext = document.querySelector('.lightbox-next');
+const galleryItems = document.querySelectorAll('.gallery-item');
+let currentImageIndex = 0;
+let galleryImages = [];
+
+// Initialize gallery
+const initGallery = () => {
+    galleryItems.forEach((item, index) => {
+        const img = item.querySelector('.gallery-img');
+        const caption = item.querySelector('.gallery-caption');
+
+        if (img && caption) {
+            galleryImages.push({
+                src: img.src,
+                alt: img.alt,
+                caption: caption.textContent
+            });
+
+            // Click to open lightbox
+            item.addEventListener('click', () => {
+                openLightbox(index);
+            });
+        }
+    });
+};
+
+// Open lightbox
+const openLightbox = (index) => {
+    currentImageIndex = index;
+    displayImage();
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+};
+
+// Close lightbox
+const closeLightbox = () => {
+    lightbox.classList.remove('active');
+    document.body.style.overflow = '';
+};
+
+// Display current image
+const displayImage = () => {
+    if (galleryImages[currentImageIndex]) {
+        lightboxImg.src = galleryImages[currentImageIndex].src;
+        lightboxImg.alt = galleryImages[currentImageIndex].alt;
+        lightboxCaption.textContent = galleryImages[currentImageIndex].caption;
+    }
+};
+
+// Navigate to previous image
+const prevImage = () => {
+    currentImageIndex = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
+    displayImage();
+};
+
+// Navigate to next image
+const nextImage = () => {
+    currentImageIndex = (currentImageIndex + 1) % galleryImages.length;
+    displayImage();
+};
+
+// Event listeners
+if (lightboxClose) {
+    lightboxClose.addEventListener('click', closeLightbox);
+}
+
+if (lightboxPrev) {
+    lightboxPrev.addEventListener('click', (e) => {
+        e.stopPropagation();
+        prevImage();
+    });
+}
+
+if (lightboxNext) {
+    lightboxNext.addEventListener('click', (e) => {
+        e.stopPropagation();
+        nextImage();
+    });
+}
+
+// Close on background click
+if (lightbox) {
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) {
+            closeLightbox();
+        }
+    });
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+    if (lightbox.classList.contains('active')) {
+        if (e.key === 'Escape') {
+            closeLightbox();
+        } else if (e.key === 'ArrowLeft') {
+            prevImage();
+        } else if (e.key === 'ArrowRight') {
+            nextImage();
+        }
+    }
+});
+
+// Initialize gallery when DOM is ready
+if (galleryItems.length > 0) {
+    initGallery();
+}
+
+// ====================================
 // Service Worker Registration (Optional)
 // ====================================
 
