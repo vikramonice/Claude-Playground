@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Flight Tracker</title>
+<style>
+  :root {
+    --bg: #f4f6f8; --card: #ffffff; --ink: #14202b; --muted: #5d6b78; --line: #dde3e8;
+    --accent: #0b6e99; --accent-soft: #e2f1f8; --ok: #1d7a46; --ok-soft: #e1f3e8;
+    --warn: #9a5b00; --warn-soft: #fdf0d9; --bad: #b3261e; --bad-soft: #fbe4e2;
+    --live: #6a3fb5; --live-soft: #efe7fb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e151b; --card: #17212a; --ink: #e6edf2; --muted: #93a2ae; --line: #2a3742;
+      --accent: #5bb8e0; --accent-soft: #15303d; --ok: #6fd39b; --ok-soft: #173528;
+      --warn: #f0b75a; --warn-soft: #3a2c12; --bad: #ff8a80; --bad-soft: #3e1d1b;
+      --live: #c4a6ff; --live-soft: #2c2140;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e151b; --card: #17212a; --ink: #e6edf2; --muted: #93a2ae; --line: #2a3742;
+    --accent: #5bb8e0; --accent-soft: #15303d; --ok: #6fd39b; --ok-soft: #173528;
+    --warn: #f0b75a; --warn-soft: #3a2c12; --bad: #ff8a80; --bad-soft: #3e1d1b;
+    --live: #c4a6ff; --live-soft: #2c2140;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 16px 16px 48px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  header h1 { font-size: 20px; margin: 0; letter-spacing: .2px; }
+  header h1 small { display: block; font-size: 12px; font-weight: 400; color: var(--muted); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--card);
+    color: var(--ink); padding: 8px 12px; border-radius: 10px; font: inherit; font-size: 14px; cursor: pointer; text-decoration: none; }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  :root[data-theme="dark"] .btn.primary { color: #071820; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #071820; } }
+  .btn.small { padding: 5px 9px; font-size: 13px; border-radius: 8px; }
+  .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; }
+  .tab { white-space: nowrap; }
+  .tab.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+  .hero .label { font-size: 12px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); }
+  .hero .route { display: flex; align-items: center; gap: 14px; margin: 8px 0 4px; }
+  .hero .code { font-size: 34px; font-weight: 700; letter-spacing: 1px; }
+  .hero .arrow { flex: 1; height: 2px; background: var(--line); position: relative; min-width: 30px; }
+  .hero .arrow::after { content: "\2708"; position: absolute; left: 50%; top: -11px; transform: translateX(-50%); color: var(--accent); font-size: 18px; background: var(--card); padding: 0 4px; }
+  .countdown { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; margin: 6px 0; }
+  .chip { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .chip.sched { background: var(--accent-soft); color: var(--accent); }
+  .chip.checkin { background: var(--warn-soft); color: var(--warn); }
+  .chip.board { background: var(--bad-soft); color: var(--bad); }
+  .chip.air { background: var(--live-soft); color: var(--live); }
+  .chip.done { background: var(--ok-soft); color: var(--ok); }
+  .links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .muted { color: var(--muted); }
+  .note { font-size: 13px; color: var(--muted); }
+  .flight { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: start; }
+  .flight .end h3 { margin: 0; font-size: 22px; }
+  .flight .end .time { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .flight .end.right { text-align: right; }
+  .flight .mid { text-align: center; font-size: 12px; color: var(--muted); padding-top: 6px; }
+  .flight .mid b { display: block; font-size: 15px; color: var(--ink); }
+  .fhead { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .fhead .fn { font-weight: 700; font-size: 16px; }
+  .layover { margin: -6px 0 8px 22px; padding: 8px 12px; border-left: 3px dashed var(--line); font-size: 14px; color: var(--muted); }
+  .layover.tight { border-left-color: var(--bad); color: var(--bad); }
+  .layover.tight b { color: var(--bad); }
+  .alert { border-radius: 10px; padding: 10px 12px; font-size: 14px; margin-top: 10px; }
+  .alert.warn { background: var(--warn-soft); color: var(--warn); }
+  .alert.bad { background: var(--bad-soft); color: var(--bad); }
+  .flight-card.past { opacity: .6; }
+  .flight-card.current { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; font-size: 14px; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; overflow-wrap: anywhere; }
+  .clocks { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .clock { border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+  .clock b { font-size: 20px; font-variant-numeric: tabular-nums; display: block; }
+  .drop { border: 2px dashed var(--line); border-radius: 14px; padding: 18px; text-align: center; color: var(--muted); }
+  .drop.over { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  h2 { font-size: 15px; margin: 0 0 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--ink); color: var(--bg);
+    padding: 10px 16px; border-radius: 10px; font-size: 14px; display: none; max-width: calc(100% - 32px); z-index: 10; }
+  .scroll { overflow-x: auto; }
+  @media (max-width: 560px) {
+    .hero .code { font-size: 26px; }
+    .countdown { font-size: 22px; }
+    .flight .end h3 { font-size: 18px; }
+    .flight .end .time { font-size: 16px; }
+    .hide-sm { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Flight Tracker <small>Times shown in each airport's local time</small></h1>
+    <div class="row">
+      <label class="btn primary" for="pdfInput">Upload booking PDF</label>
+      <input id="pdfInput" type="file" accept="application/pdf" hidden>
+    </div>
+  </header>
+
+  <div class="tabs" id="tabs"></div>
+  <main id="main"></main>
+
+  <div class="card">
+    <h2>Add a new booking</h2>
+    <div class="drop" id="drop">Drop an e-ticket PDF here, or use <b>Upload booking PDF</b> above.<br>
+      <span class="note">The PDF is read inside your browser and saved only on this device. Nothing is uploaded anywhere.</span></div>
+  </div>
+  <p class="note">Status chips are estimated from the schedule. Use the <b>Live status</b> buttons for real-time delays, gates and cancellations.
+    Reconfirm timings with the airline 48 hours before departure.</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="parser.js"></script>
+<script>
+'use strict';
+const STORE_KEY = 'flightTracker.trips.v1';
+const SEL_KEY = 'flightTracker.selected';
+
+// IATA code -> [IANA time zone, short city name]. Add airports here as needed.
+const AIRPORTS = {
+  GOI: ['Asia/Kolkata', 'Goa (Dabolim)'], GOX: ['Asia/Kolkata', 'Goa (Mopa)'], BOM: ['Asia/Kolkata', 'Mumbai'],
+  DEL: ['Asia/Kolkata', 'Delhi'], BLR: ['Asia/Kolkata', 'Bengaluru'], MAA: ['Asia/Kolkata', 'Chennai'],
+  CCU: ['Asia/Kolkata', 'Kolkata'], HYD: ['Asia/Kolkata', 'Hyderabad'], COK: ['Asia/Kolkata', 'Kochi'],
+  AMD: ['Asia/Kolkata', 'Ahmedabad'], PNQ: ['Asia/Kolkata', 'Pune'], TRV: ['Asia/Kolkata', 'Thiruvananthapuram'],
+  IXB: ['Asia/Kolkata', 'Bagdogra'], DED: ['Asia/Kolkata', 'Dehradun'], IXL: ['Asia/Kolkata', 'Leh'],
+  ADD: ['Africa/Addis_Ababa', 'Addis Ababa'], CPT: ['Africa/Johannesburg', 'Cape Town'], JNB: ['Africa/Johannesburg', 'Johannesburg'],
+  NBO: ['Africa/Nairobi', 'Nairobi'], MRU: ['Indian/Mauritius', 'Mauritius'], CAI: ['Africa/Cairo', 'Cairo'],
+  DXB: ['Asia/Dubai', 'Dubai'], AUH: ['Asia/Dubai', 'Abu Dhabi'], DOH: ['Asia/Qatar', 'Doha'], MCT: ['Asia/Muscat', 'Muscat'],
+  BAH: ['Asia/Bahrain', 'Bahrain'], KWI: ['Asia/Kuwait', 'Kuwait'], RUH: ['Asia/Riyadh', 'Riyadh'], JED: ['Asia/Riyadh', 'Jeddah'],
+  IST: ['Europe/Istanbul', 'Istanbul'], FRA: ['Europe/Berlin', 'Frankfurt'], MUC: ['Europe/Berlin', 'Munich'],
+  BRE: ['Europe/Berlin', 'Bremen'], HAM: ['Europe/Berlin', 'Hamburg'], BER: ['Europe/Berlin', 'Berlin'],
+  LHR: ['Europe/London', 'London Heathrow'], LGW: ['Europe/London', 'London Gatwick'], CDG: ['Europe/Paris', 'Paris'],
+  AMS: ['Europe/Amsterdam', 'Amsterdam'], ZRH: ['Europe/Zurich', 'Zurich'], VIE: ['Europe/Vienna', 'Vienna'],
+  CPH: ['Europe/Copenhagen', 'Copenhagen'], OSL: ['Europe/Oslo', 'Oslo'], TOS: ['Europe/Oslo', 'Tromso'],
+  ARN: ['Europe/Stockholm', 'Stockholm'], HEL: ['Europe/Helsinki', 'Helsinki'], LYR: ['Arctic/Longyearbyen', 'Longyearbyen'],
+  KEF: ['Atlantic/Reykjavik', 'Reykjavik'], MAD: ['Europe/Madrid', 'Madrid'], FCO: ['Europe/Rome', 'Rome'], BRU: ['Europe/Brussels', 'Brussels'],
+  SIN: ['Asia/Singapore', 'Singapore'], KUL: ['Asia/Kuala_Lumpur', 'Kuala Lumpur'], BKK: ['Asia/Bangkok', 'Bangkok'],
+  HKG: ['Asia/Hong_Kong', 'Hong Kong'], NRT: ['Asia/Tokyo', 'Tokyo Narita'], HND: ['Asia/Tokyo', 'Tokyo Haneda'],
+  ICN: ['Asia/Seoul', 'Seoul'], PEK: ['Asia/Shanghai', 'Beijing'], PVG: ['Asia/Shanghai', 'Shanghai'], CMB: ['Asia/Colombo', 'Colombo'],
+  KTM: ['Asia/Kathmandu', 'Kathmandu'], DAC: ['Asia/Dhaka', 'Dhaka'], MLE: ['Indian/Maldives', 'Male'],
+  SYD: ['Australia/Sydney', 'Sydney'], MEL: ['Australia/Melbourne', 'Melbourne'], PER: ['Australia/Perth', 'Perth'],
+  HBA: ['Australia/Hobart', 'Hobart'], AKL: ['Pacific/Auckland', 'Auckland'], CHC: ['Pacific/Auckland', 'Christchurch'],
+  PUQ: ['America/Punta_Arenas', 'Punta Arenas'], SCL: ['America/Santiago', 'Santiago'], EZE: ['America/Argentina/Buenos_Aires', 'Buenos Aires'],
+  USH: ['America/Argentina/Ushuaia', 'Ushuaia'], GRU: ['America/Sao_Paulo', 'Sao Paulo'],
+  JFK: ['America/New_York', 'New York JFK'], EWR: ['America/New_York', 'Newark'], BOS: ['America/New_York', 'Boston'],
+  IAD: ['America/New_York', 'Washington'], ORD: ['America/Chicago', 'Chicago'], DEN: ['America/Denver', 'Denver'],
+  SFO: ['America/Los_Angeles', 'San Francisco'], LAX: ['America/Los_Angeles', 'Los Angeles'], SEA: ['America/Los_Angeles', 'Seattle'],
+  YYZ: ['America/Toronto', 'Toronto'], YVR: ['America/Vancouver', 'Vancouver']
+};
+const LOCAL_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+const tzOf = code => (AIRPORTS[code] || [LOCAL_TZ])[0];
+const cityOf = (code, fallback) => (AIRPORTS[code] || [])[1] || (fallback || '').split(',').pop().trim() || code;
+
+// ---------- time helpers (wall-clock time at an airport -> UTC ms) ----------
+function tzOffsetMs(ts, tz) {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: '2-digit',
+    day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).formatToParts(new Date(ts));
+  const g = t => +parts.find(p => p.type === t).value;
+  return Date.UTC(g('year'), g('month') - 1, g('day'), g('hour') % 24, g('minute'), g('second')) - ts;
+}
+function wallToUtc(iso, tz) {
+  const [d, t] = iso.split('T'); const [y, m, dd] = d.split('-').map(Number); const [h, mi] = t.split(':').map(Number);
+  const naive = Date.UTC(y, m - 1, dd, h, mi);
+  let ts = naive - tzOffsetMs(naive, tz);
+  ts = naive - tzOffsetMs(ts, tz);
+  return ts;
+}
+const fmtWall = (iso, opts) => new Date(iso + ':00Z').toLocaleString('en-GB', Object.assign({ timeZone: 'UTC' }, opts));
+const fmtTime = iso => fmtWall(iso, { hour: '2-digit', minute: '2-digit' });
+const fmtDate = iso => fmtWall(iso, { weekday: 'short', day: 'numeric', month: 'short' });
+function fmtDur(ms) {
+  const neg = ms < 0; ms = Math.abs(ms);
+  const d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 36e5), m = Math.floor(ms % 36e5 / 6e4);
+  return (neg ? '-' : '') + (d ? d + 'd ' : '') + (d || h ? h + 'h ' : '') + m + 'm';
+}
+function fmtCountdown(ms) {
+  const d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 36e5), m = Math.floor(ms % 36e5 / 6e4), s = Math.floor(ms % 6e4 / 1e3);
+  const p = n => String(n).padStart(2, '0');
+  return (d ? d + 'd ' : '') + p(h) + ':' + p(m) + ':' + p(s);
+}
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// ---------- storage ----------
+function loadLocal() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch (e) { return []; } }
+function saveLocal(trips) { try { localStorage.setItem(STORE_KEY, JSON.stringify(trips)); return true; } catch (e) { return false; } }
+function getSel() { try { return localStorage.getItem(SEL_KEY); } catch (e) { return null; } }
+function setSel(id) { try { localStorage.setItem(SEL_KEY, id); } catch (e) {} }
+
+let builtIn = [];
+let trips = [];
+let selected = null;
+
+function mergeTrips() {
+  const local = loadLocal();
+  const map = new Map();
+  builtIn.forEach(t => map.set(t.id, Object.assign({}, t, { source: 'site' })));
+  // A trip uploaded on this device has the full PDF details, so it wins over the site copy.
+  local.forEach(t => map.set(t.id, Object.assign({}, map.get(t.id) || {}, t, { source: 'device' })));
+  trips = [...map.values()].map(enrich).sort((a, b) => a.start - b.start);
+}
+
+function enrich(trip) {
+  trip.flights.forEach(f => {
+    f.depUtc = wallToUtc(f.dep, tzOf(f.from));
+    f.arrUtc = wallToUtc(f.arr, tzOf(f.to));
+  });
+  trip.start = trip.flights[0].depUtc;
+  trip.end = trip.flights[trip.flights.length - 1].arrUtc;
+  return trip;
+}
+
+// ---------- status ----------
+function flightStatus(f, now) {
+  const toDep = f.depUtc - now;
+  if (now > f.arrUtc) return ['done', 'Landed (scheduled)'];
+  if (now >= f.depUtc) return ['air', 'In the air (scheduled)'];
+  if (toDep <= 60 * 6e4) return ['board', 'Boarding soon'];
+  if (toDep <= 24 * 36e5) return ['checkin', 'Check-in open'];
+  return ['sched', 'Scheduled'];
+}
+function liveLinks(f, small) {
+  const c = small ? 'btn small' : 'btn';
+  const q = encodeURIComponent(f.flight);
+  const ymd = f.dep.slice(0, 10).replace(/-/g, '');
+  return `<a class="${c} ${small ? '' : 'primary'}" target="_blank" rel="noopener" href="https://www.flightradar24.com/data/flights/${f.flight.toLowerCase()}">Live status</a>
+    <a class="${c}" target="_blank" rel="noopener" href="https://www.flightaware.com/live/flight/${q}">FlightAware</a>
+    <a class="${c}" target="_blank" rel="noopener" href="https://www.google.com/search?q=${q}+flight+status+${ymd}">Google</a>`;
+}
+
+// ---------- rendering ----------
+function renderTabs() {
+  const el = document.getElementById('tabs');
+  const now = Date.now();
+  el.innerHTML = trips.map(t => {
+    const past = now > t.end + 6 * 36e5;
+    return `<button class="btn tab ${t.id === selected ? 'active' : ''}" data-id="${esc(t.id)}">
+      ${esc(t.title)} <span class="muted">${fmtWall(t.flights[0].dep, { day: 'numeric', month: 'short', year: '2-digit' })}${past ? ' (past)' : ''}</span></button>`;
+  }).join('');
+  el.querySelectorAll('.tab').forEach(b => b.onclick = () => { selected = b.dataset.id; setSel(selected); render(); });
+}
+
+function heroHtml(trip, now) {
+  const f = trip.flights.find(x => now < x.arrUtc);
+  if (!f) {
+    const last = trip.flights[trip.flights.length - 1];
+    return `<div class="card hero"><div class="label">Trip complete</div>
+      <div class="route"><span class="code">${esc(trip.flights[0].from)}</span><span class="arrow"></span><span class="code">${esc(last.to)}</span></div>
+      <p class="muted">Arrived in ${esc(cityOf(last.to, last.toName))} on ${fmtDate(last.arr)} at ${fmtTime(last.arr)} (scheduled).</p></div>`;
+  }
+  const [cls, label] = flightStatus(f, now);
+  const inAir = now >= f.depUtc;
+  const target = inAir ? f.arrUtc : f.depUtc;
+  return `<div class="card hero" id="hero">
+    <div class="row" style="justify-content:space-between"><span class="label">${inAir ? 'Current flight' : 'Next flight'}: ${esc(f.flight)}</span>
+      <span class="chip ${cls}">${label}</span></div>
+    <div class="route"><span class="code">${esc(f.from)}</span><span class="arrow"></span><span class="code">${esc(f.to)}</span></div>
+    <div class="muted">${esc(cityOf(f.from, f.fromName))} to ${esc(cityOf(f.to, f.toName))}</div>
+    <div class="countdown" data-target="${target}">--</div>
+    <div class="muted">${inAir ? 'until scheduled landing at' : 'until departure at'} <b>${inAir ? fmtTime(f.arr) : fmtTime(f.dep)}</b>
+      ${inAir ? fmtDate(f.arr) : fmtDate(f.dep)} local time
+      ${!inAir && f.depTerminal ? ' &middot; Terminal ' + esc(f.depTerminal) : ''}</div>
+    <div class="links">${liveLinks(f)}</div>
+  </div>`;
+}
+
+function flightsHtml(trip, now) {
+  const current = trip.flights.find(x => now < x.arrUtc);
+  let html = '<h2>Itinerary</h2>';
+  trip.flights.forEach((f, i) => {
+    const [cls, label] = flightStatus(f, now);
+    const unknown = [f.from, f.to].filter(c => !AIRPORTS[c]);
+    const codeshare = !f.operatedBy && +f.number >= 3000;
+    html += `<div class="card flight-card ${now > f.arrUtc ? 'past' : ''} ${f === current ? 'current' : ''}">
+      <div class="fhead"><div><span class="fn">${esc(f.flight)}</span> <span class="muted">${esc(f.airline)}${f.cabin ? ' &middot; ' + esc(f.cabin) : ''}</span></div>
+        <span class="chip ${cls}">${label}</span></div>
+      <div class="flight">
+        <div class="end"><h3>${esc(f.from)}</h3><div class="time">${fmtTime(f.dep)}</div>
+          <div class="muted">${fmtDate(f.dep)}</div><div class="note">${esc(f.fromName)}<br>Terminal ${esc(f.depTerminal || 'not given')}</div></div>
+        <div class="mid"><b>${fmtDur(f.arrUtc - f.depUtc)}</b>flight time${f.aircraft ? '<br>' + esc(f.aircraft) : ''}</div>
+        <div class="end right"><h3>${esc(f.to)}</h3><div class="time">${fmtTime(f.arr)}</div>
+          <div class="muted">${fmtDate(f.arr)}</div><div class="note">${esc(f.toName)}<br>Terminal ${esc(f.arrTerminal || 'not given')}</div></div>
+      </div>
+      ${f.operatedBy ? `<div class="alert warn">Operated by <b>${esc(f.operatedBy)}</b>. Check in at the ${esc(f.operatedBy)} counter;
+        seat selection uses the ${esc(f.operatedBy)} PNR.</div>` : ''}
+      ${codeshare ? `<div class="alert warn">${esc(f.flight)} has a high flight number, which usually means a codeshare operated by a partner airline.
+        Check the live status page for the operating carrier and its check-in counter.</div>` : ''}
+      ${unknown.length ? `<div class="alert warn">Time zone unknown for ${unknown.join(', ')}; using your device time zone for countdowns.</div>` : ''}
+      <div class="links">${liveLinks(f, true)}</div>
+    </div>`;
+    const next = trip.flights[i + 1];
+    if (next) {
+      const gap = next.depUtc - f.arrUtc;
+      const tight = gap < 60 * 6e4;
+      const sameTerm = f.arrTerminal && next.depTerminal && f.arrTerminal === next.depTerminal;
+      html += `<div class="layover ${tight ? 'tight' : ''}">
+        <b>${fmtDur(gap)}</b> connection in ${esc(cityOf(f.to, f.toName))}
+        ${f.arrTerminal || next.depTerminal ? `&middot; arrive T${esc(f.arrTerminal || '?')}, depart T${esc(next.depTerminal || '?')}${sameTerm ? ' (same terminal)' : ''}` : ''}
+        ${tight ? '<br>Tight connection. Ask at check-in to tag bags through to the final destination and head straight to the transfer desk on arrival.' : ''}
+        ${gap < 0 ? '<br>Next flight leaves before this one lands. Check the booking.' : ''}
+      </div>`;
+    }
+  });
+  return html;
+}
+
+function detailsHtml(trip) {
+  const pax = trip.passengers || [];
+  const hasTickets = pax.some(p => p.ticket);
+  const kv = [
+    ['Status', trip.status], ['Route', trip.sector], ['Trip type', trip.tripType], ['Booked on', trip.bookedOn],
+    ['Booking ref', trip.reference], ['GDS PNR', trip.gdsPnr],
+    ['Airline PNR', [...new Set(pax.map(p => p.airlinePnr).filter(Boolean))].join(', ')],
+    ['Agency', trip.agency || (trip.client ? 'Booked for ' + trip.client : '')]
+  ].filter(r => r[1]);
+  const notes = trip.notes || [];
+  return `${notes.length ? `<div class="card"><h2>Notes</h2>${notes.map(n => `<div class="alert warn">${esc(n)}</div>`).join('')}</div>` : ''}
+    <div class="card"><h2>Booking</h2>
+    <dl class="kv">${kv.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
+    ${!hasTickets && trip.source === 'site' ? '<p class="note">PNR and ticket numbers are not stored on the public site. Upload the PDF once on this device to see them here.</p>' : ''}
+    </div>
+    <div class="card"><h2>Travellers (${pax.length})</h2><div class="scroll"><table>
+      <tr><th>Name</th>${hasTickets ? '<th>Ticket</th>' : ''}<th>Bags</th></tr>
+      ${pax.map(p => `<tr><td>${esc(p.name)}</td>${hasTickets ? `<td>${esc(p.ticket)}</td>` : ''}<td>${esc(p.bag || '')}</td></tr>`).join('')}
+    </table></div></div>`;
+}
+
+function clocksHtml(trip) {
+  const codes = [...new Set(trip.flights.flatMap(f => [f.from, f.to]))];
+  return `<div class="card"><h2>Local time now</h2><div class="clocks">
+    ${codes.map(c => `<div class="clock"><span class="muted">${esc(c)} &middot; ${esc(cityOf(c))}</span><b data-tz="${esc(tzOf(c))}">--:--</b>
+      <span class="note" data-tzdate="${esc(tzOf(c))}"></span></div>`).join('')}
+  </div></div>`;
+}
+
+function toolsHtml(trip) {
+  return `<div class="card"><h2>This trip</h2><div class="row">
+    <button class="btn small" id="exportBtn">Download trip data (for the site)</button>
+    ${trip.source === 'device' ? '<button class="btn small" id="deleteBtn">Remove from this device</button>' : ''}
+    </div><p class="note">${trip.source === 'device'
+      ? 'Saved on this device only. To see it on your other devices too, upload the same PDF there, or add the downloaded data to travel/trips.json in the repository.'
+      : 'Part of the site (travel/trips.json), so it shows on every device.'}</p></div>`;
+}
+
+function render() {
+  const main = document.getElementById('main');
+  if (!trips.length) {
+    main.innerHTML = '<div class="card"><p>No trips yet. Upload an e-ticket PDF to get started.</p></div>';
+    document.getElementById('tabs').innerHTML = '';
+    return;
+  }
+  if (!trips.find(t => t.id === selected)) {
+    const now = Date.now();
+    selected = (trips.find(t => t.end > now) || trips[trips.length - 1]).id;
+  }
+  const trip = trips.find(t => t.id === selected);
+  const now = Date.now();
+  renderTabs();
+  main.innerHTML = heroHtml(trip, now) + flightsHtml(trip, now) + clocksHtml(trip) + detailsHtml(trip) + toolsHtml(trip);
+  document.getElementById('exportBtn').onclick = () => exportTrip(trip);
+  const del = document.getElementById('deleteBtn');
+  if (del) del.onclick = () => {
+    if (!confirm('Remove this trip from this device?')) return;
+    saveLocal(loadLocal().filter(t => t.id !== trip.id));
+    mergeTrips(); render(); toast('Trip removed from this device');
+  };
+  tick();
+}
+
+function tick() {
+  const now = Date.now();
+  document.querySelectorAll('.countdown').forEach(el => {
+    const ms = +el.dataset.target - now;
+    if (ms <= 0) { render(); return; }
+    el.textContent = fmtCountdown(ms);
+  });
+  document.querySelectorAll('[data-tz]').forEach(el => {
+    el.textContent = new Date(now).toLocaleTimeString('en-GB', { timeZone: el.dataset.tz, hour: '2-digit', minute: '2-digit' });
+  });
+  document.querySelectorAll('[data-tzdate]').forEach(el => {
+    el.textContent = new Date(now).toLocaleDateString('en-GB', { timeZone: el.dataset.tzdate, weekday: 'short', day: 'numeric', month: 'short' });
+  });
+}
+
+// Strip ticket numbers, PNRs and fares so the downloaded data is safe to publish.
+function exportTrip(trip) {
+  const keep = ['id', 'title', 'name', 'status', 'tripType', 'sector', 'bookedOn', 'agency', 'notes'];
+  const out = {};
+  keep.forEach(k => { if (trip[k]) out[k] = trip[k]; });
+  out.passengers = (trip.passengers || []).map(p => ({ name: p.name, type: p.type, bag: p.bag }));
+  out.flights = trip.flights.map(f => {
+    const c = Object.assign({}, f); delete c.depUtc; delete c.arrUtc; return c;
+  });
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = trip.id + '.json'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(t._h); t._h = setTimeout(() => t.style.display = 'none', 4000);
+}
+
+// ---------- PDF upload ----------
+async function handleFile(file) {
+  if (!file) return;
+  if (!window.pdfjsLib) { toast('PDF reader failed to load. Check your connection and reload.'); return; }
+  try {
+    toast('Reading ' + file.name + '...');
+    const text = await BookingParser.pdfToText(pdfjsLib, new Uint8Array(await file.arrayBuffer()));
+    const booking = BookingParser.parseBooking(text);
+    booking.uploadedAt = new Date().toISOString();
+    booking.fileName = file.name;
+    // Keep site-only extras (operating carrier, aircraft, notes) when the same trip is uploaded.
+    const site = builtIn.find(t => t.id === booking.id);
+    if (site) {
+      booking.notes = booking.notes || site.notes;
+      booking.flights.forEach(f => {
+        const s = site.flights.find(x => x.flight === f.flight && x.dep === f.dep);
+        if (s) ['operatedBy', 'aircraft'].forEach(k => { if (s[k] && !f[k]) f[k] = s[k]; });
+      });
+    }
+    const local = loadLocal().filter(t => t.id !== booking.id);
+    local.push(booking);
+    const saved = saveLocal(local);
+    if (!saved) builtIn.push(booking);  // storage blocked: keep it for this session at least
+    mergeTrips();
+    selected = booking.id; setSel(selected);
+    render();
+    toast(`Added ${booking.title}: ${booking.flights.length} flight(s)${saved ? '' : ' (could not save on this device)'}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (e) {
+    console.error(e);
+    toast('Could not read this PDF: ' + e.message);
+  }
+}
+
+document.getElementById('pdfInput').onchange = e => { handleFile(e.target.files[0]); e.target.value = ''; };
+const drop = document.getElementById('drop');
+['dragenter', 'dragover'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+document.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
+
+// ---------- start ----------
+(async function init() {
+  if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  try {
+    const r = await fetch('trips.json', { cache: 'no-cache' });
+    if (r.ok) builtIn = await r.json();
+  } catch (e) { /* offline or opened as a file: device trips still work */ }
+  selected = getSel();
+  mergeTrips();
+  render();
+  setInterval(tick, 1000);
+  setInterval(render, 60 * 1000);
+})();
+</script>
+</body>
+</html>
