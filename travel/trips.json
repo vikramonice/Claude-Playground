@@ -1,0 +1,29 @@
+[
+  {
+    "id": "FB28108490C3-2026-11-01",
+    "title": "GOI to CPT",
+    "name": "Antarctic expedition: Goa to Cape Town",
+    "status": "CONFIRMED",
+    "tripType": "OneWay",
+    "sector": "Goa(GOI) to Mumbai(BOM) to Cape Town(CPT)",
+    "bookedOn": "2026-10-28",
+    "agency": "Balmer Lawrie Travel, 24x7 helpline 0124-4603500 / 0124-6282500",
+    "passengers": [
+      { "name": "MR NGAZIPMI CHAHONG", "type": "ADT", "bag": "2 Piece(s)" },
+      { "name": "MR VIKASH CHANDRA", "type": "ADT", "bag": "2 Piece(s)" },
+      { "name": "MR AJAY BHADRAN", "type": "ADT", "bag": "2 Piece(s)" },
+      { "name": "MR VIKRAM GOEL", "type": "ADT", "bag": "2 Piece(s)" }
+    ],
+    "flights": [
+      { "airline": "Ethiopian Airlines", "carrier": "ET", "number": "4410", "flight": "ET4410", "cabin": "economy (K)",
+        "from": "GOI", "fromName": "Dabolim, Goa", "to": "BOM", "toName": "Chhatrapati Shivaji International, Mumbai",
+        "dep": "2026-11-01T23:20", "arr": "2026-11-02T00:50", "depTerminal": "", "arrTerminal": "2", "duration": "1h 30m" },
+      { "airline": "Ethiopian Airlines", "carrier": "ET", "number": "611", "flight": "ET611", "cabin": "economy (K)",
+        "from": "BOM", "fromName": "Chhatrapati Shivaji International, Mumbai", "to": "ADD", "toName": "Bole International, Addis Ababa",
+        "dep": "2026-11-02T04:05", "arr": "2026-11-02T06:55", "depTerminal": "2", "arrTerminal": "2", "duration": "2h 50m" },
+      { "airline": "Ethiopian Airlines", "carrier": "ET", "number": "845", "flight": "ET845", "cabin": "economy (K)",
+        "from": "ADD", "fromName": "Bole International, Addis Ababa", "to": "CPT", "toName": "Cape Town International, Cape Town",
+        "dep": "2026-11-02T07:30", "arr": "2026-11-02T13:00", "depTerminal": "2", "arrTerminal": "", "duration": "5h 30m" }
+    ]
+  }
+]
