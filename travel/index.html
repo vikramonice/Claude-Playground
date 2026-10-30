@@ -283,17 +283,19 @@ function flightsHtml(trip, now) {
   trip.flights.forEach((f, i) => {
     const [cls, label] = flightStatus(f, now);
     const unknown = [f.from, f.to].filter(c => !AIRPORTS[c]);
-    const codeshare = +f.number >= 3000;
+    const codeshare = !f.operatedBy && +f.number >= 3000;
     html += `<div class="card flight-card ${now > f.arrUtc ? 'past' : ''} ${f === current ? 'current' : ''}">
       <div class="fhead"><div><span class="fn">${esc(f.flight)}</span> <span class="muted">${esc(f.airline)}${f.cabin ? ' &middot; ' + esc(f.cabin) : ''}</span></div>
         <span class="chip ${cls}">${label}</span></div>
       <div class="flight">
         <div class="end"><h3>${esc(f.from)}</h3><div class="time">${fmtTime(f.dep)}</div>
           <div class="muted">${fmtDate(f.dep)}</div><div class="note">${esc(f.fromName)}<br>Terminal ${esc(f.depTerminal || 'not given')}</div></div>
-        <div class="mid"><b>${esc(f.duration || fmtDur(f.arrUtc - f.depUtc))}</b>flight time</div>
+        <div class="mid"><b>${fmtDur(f.arrUtc - f.depUtc)}</b>flight time${f.aircraft ? '<br>' + esc(f.aircraft) : ''}</div>
         <div class="end right"><h3>${esc(f.to)}</h3><div class="time">${fmtTime(f.arr)}</div>
           <div class="muted">${fmtDate(f.arr)}</div><div class="note">${esc(f.toName)}<br>Terminal ${esc(f.arrTerminal || 'not given')}</div></div>
       </div>
+      ${f.operatedBy ? `<div class="alert warn">Operated by <b>${esc(f.operatedBy)}</b>. Check in at the ${esc(f.operatedBy)} counter;
+        seat selection uses the ${esc(f.operatedBy)} PNR.</div>` : ''}
       ${codeshare ? `<div class="alert warn">${esc(f.flight)} has a high flight number, which usually means a codeshare operated by a partner airline.
         Check the live status page for the operating carrier and its check-in counter.</div>` : ''}
       ${unknown.length ? `<div class="alert warn">Time zone unknown for ${unknown.join(', ')}; using your device time zone for countdowns.</div>` : ''}
@@ -324,7 +326,9 @@ function detailsHtml(trip) {
     ['Airline PNR', [...new Set(pax.map(p => p.airlinePnr).filter(Boolean))].join(', ')],
     ['Agency', trip.agency || (trip.client ? 'Booked for ' + trip.client : '')]
   ].filter(r => r[1]);
-  return `<div class="card"><h2>Booking</h2>
+  const notes = trip.notes || [];
+  return `${notes.length ? `<div class="card"><h2>Notes</h2>${notes.map(n => `<div class="alert warn">${esc(n)}</div>`).join('')}</div>` : ''}
+    <div class="card"><h2>Booking</h2>
     <dl class="kv">${kv.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
     ${!hasTickets && trip.source === 'site' ? '<p class="note">PNR and ticket numbers are not stored on the public site. Upload the PDF once on this device to see them here.</p>' : ''}
     </div>
@@ -393,7 +397,7 @@ function tick() {
 
 // Strip ticket numbers, PNRs and fares so the downloaded data is safe to publish.
 function exportTrip(trip) {
-  const keep = ['id', 'title', 'name', 'status', 'tripType', 'sector', 'bookedOn', 'agency'];
+  const keep = ['id', 'title', 'name', 'status', 'tripType', 'sector', 'bookedOn', 'agency', 'notes'];
   const out = {};
   keep.forEach(k => { if (trip[k]) out[k] = trip[k]; });
   out.passengers = (trip.passengers || []).map(p => ({ name: p.name, type: p.type, bag: p.bag }));
@@ -422,6 +426,15 @@ async function handleFile(file) {
     const booking = BookingParser.parseBooking(text);
     booking.uploadedAt = new Date().toISOString();
     booking.fileName = file.name;
+    // Keep site-only extras (operating carrier, aircraft, notes) when the same trip is uploaded.
+    const site = builtIn.find(t => t.id === booking.id);
+    if (site) {
+      booking.notes = booking.notes || site.notes;
+      booking.flights.forEach(f => {
+        const s = site.flights.find(x => x.flight === f.flight && x.dep === f.dep);
+        if (s) ['operatedBy', 'aircraft'].forEach(k => { if (s[k] && !f[k]) f[k] = s[k]; });
+      });
+    }
     const local = loadLocal().filter(t => t.id !== booking.id);
     local.push(booking);
     const saved = saveLocal(local);

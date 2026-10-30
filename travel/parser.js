@@ -68,7 +68,6 @@
       .replace(/Terminal(\s+[A-Z]?\d+[A-Z]?)?/g, ' ').replace(/\([A-Z0-9]{1,3}\)/g, ' ');
     const numM = stripped.match(/(?:^|\s)(\d{1,4})(?=\s|$)/m);
     const terms = [...seg.matchAll(/Terminal(?:[ \t]+([A-Z]?\d+[A-Z]?)\b)?/g)].map(m => m[1] || '');
-    const durM = seg.match(/(\d+)\s*H\s*:\s*(\d+)\s*M/i);
 
     const carrierCode = carrierM ? carrierM[2] : '';
     const number = numM ? numM[1] : '';
@@ -81,13 +80,15 @@
       from: airports[0].code, fromName: airports[0].name,
       to: airports[1].code, toName: airports[1].name,
       dep: toIso(times[0]), arr: toIso(times[1]),
-      depTerminal: terms[0] || '', arrTerminal: terms[1] || '',
-      duration: durM ? `${durM[1]}h ${durM[2]}m` : ''
+      depTerminal: terms[0] || '', arrTerminal: terms[1] || ''
     };
   }
 
   function parseBooking(rawText) {
     const text = clean(rawText);
+    if (text.replace(/©.*|\s/g, '').length < 50) {
+      throw new Error('this PDF has no readable text (it is a scanned or image-only file). Use the travel agency e-ticket instead.');
+    }
     const booking = {
       reference: pick(text, /Reference ID\s*:\s*([A-Z0-9]+)/i),
       gdsPnr: pick(text, /GDS PNR\s*:\s*([A-Z0-9]+)/i),
